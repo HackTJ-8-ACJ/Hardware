@@ -59,9 +59,7 @@ void setup() {
 
     if (daylight_savings) time_client.setTimeOffset(utc_offset + SECS_PER_HOUR);
 
-    Serial.println(String("") + day(epoch) + ":" + month(epoch) + ":" +
-                   year(epoch));
-    // time_client.setTimeOffset();
+    Serial.println();
     Serial.println(WiFi_ssid);
     Serial.println(WiFi_password);
 
