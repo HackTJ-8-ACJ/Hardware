@@ -5,6 +5,7 @@
 #include <ESP8266WiFi.h>
 #include <NTPClient.h>
 #include <SPI.h>
+#include <Time.h>
 #include <WiFiUdp.h>
 
 #include "secrets.h"
@@ -76,9 +77,14 @@ void loop() {
         if (distance_ft <= 2 && distance_cm > 2) {
             // 2 ft < distance < 2 cm
             time_client.update();
-            // epoch has been tested using <Time.h> and works properly
             unsigned long epoch = time_client.getEpochTime();
-            Serial.println(String("Within 2 ft at ") + epoch);
+            int h = hour(epoch);
+            int m = minute(epoch);
+            int s = second(epoch);
+            String hours = (h < 10 ? String("0") : String("")) + h % 12;
+            String minutes = (m < 10 ? String(":0") : String(":")) + m;
+            String seconds = (s < 10 ? String(":0") : String(":")) + s;
+            Serial.println(String("< 2 ft at ") + hours + minutes + seconds);
         }
 
         // put on cooldown
