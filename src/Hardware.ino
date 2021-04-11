@@ -15,8 +15,8 @@ const int cooldown = 1000;
 
 int last_cooldown;
 
-// TODO: account for DST dynamically
-const long utc_offset = -18000 + 3600;
+// NYC time zone
+const long utc_offset = -18000;
 
 UltraSonicDistanceSensor sonar(trigger_pin, echo_pin);
 
@@ -39,6 +39,28 @@ void setup() {
     }
 
     time_client.begin();
+    time_client.update();
+
+    // dynamic daylight savings
+    int epoch = time_client.getEpochTime();
+    bool daylight_savings = false;
+    if (month(epoch) > 3 && month(epoch) < 11) {
+        daylight_savings = true;
+    } else if (month(epoch) == 3) {
+        // DST starts on March 14 at 2am
+        if (day(epoch) > 14 || (day(epoch) == 14 && hour(epoch) >= 2))
+            daylight_savings = true;
+    } else if (month(epoch) == 11) {
+        // DST ends on November 7 at 2am
+        if (day(epoch) > 7 || (day(epoch) == 7 && hour(epoch) >= 2))
+            daylight_savings = true;
+    }
+
+    if (daylight_savings) time_client.setTimeOffset(utc_offset + SECS_PER_HOUR);
+
+    Serial.println(String("") + day(epoch) + ":" + month(epoch) + ":" +
+                   year(epoch));
+    // time_client.setTimeOffset();
     Serial.println(WiFi_ssid);
     Serial.println(WiFi_password);
 
