@@ -1,13 +1,19 @@
 #include <Arduino.h>
 #include <HCSR04.h>
 
+#include "secrets.h"
+
 const int trigger_pin = 14;
 const int echo_pin = 12;
 const int max_distance = 400;
 
 UltraSonicDistanceSensor sonar(trigger_pin, echo_pin);
 
-void setup() { Serial.begin(115200); }
+void setup() {
+    Serial.begin(115200);
+    Serial.println(WiFi_SSID);
+    Serial.println(WiFi_PASSWORD);
+}
 
 void loop() {
     float distance_cm = sonar.measureDistanceCm();
