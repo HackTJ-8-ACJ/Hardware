@@ -2,11 +2,14 @@
 // ultrasonic
 #include <HCSR04.h>
 // WiFi/NTP
+#include <ESP8266HTTPClient.h>
 #include <ESP8266WiFi.h>
 #include <NTPClient.h>
 #include <SPI.h>
 #include <Time.h>
 #include <WiFiUdp.h>
+// JSON
+#include <ArduinoJson.h>
 
 #include "secrets.h"
 
@@ -61,7 +64,7 @@ void setup() {
 
     Serial.println();
     Serial.println(WiFi_ssid);
-    Serial.println(WiFi_password);
+    Serial.println("Connected!");
 
     // initialize timers
     last_cooldown = millis();
@@ -76,13 +79,30 @@ void loop() {
             // 2 ft < distance < 2 cm
             time_client.update();
             unsigned long epoch = time_client.getEpochTime();
-            int h = hour(epoch);
+            int h = hourFormat12(epoch);
             int m = minute(epoch);
             int s = second(epoch);
-            String hours = (h < 10 ? String("0") : String("")) + h % 12;
+            String hours = (h < 10 ? String("0") : String("")) + h;
             String minutes = (m < 10 ? String(":0") : String(":")) + m;
             String seconds = (s < 10 ? String(":0") : String(":")) + s;
             Serial.println(String("< 2 ft at ") + hours + minutes + seconds);
+
+            WiFiClient client;
+            if (client.connect("192.168.1.158", 3000)) {
+                String data = String(epoch);
+                client.println("POST / HTTP/1.1");
+                client.println("Host: 192.168.1.158");
+                client.println("Accept: text/plain");
+                client.println("Content-Type: text/plain");
+                client.print("Content-Length: ");
+                client.println(data.length());
+                client.println();
+                client.print(data);
+                delay(500);
+                if (client.connected()) {
+                    client.stop();
+                }
+            }
         }
 
         // put on cooldown
